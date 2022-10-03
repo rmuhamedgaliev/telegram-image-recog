@@ -11,11 +11,35 @@ import static dev.rmuhamedgaliev.recog.app.MessageUtils.getMessage;
 
 import org.apache.commons.text.WordUtils;
 
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URLConnection;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+
 public class App {
     public static void main(String[] args) {
-        LinkedList tokens;
-        tokens = split(getMessage());
-        String result = join(tokens);
-        System.out.println(WordUtils.capitalize(result));
+        HttpClient.newHttpClient()
+                .sendAsync(
+                        HttpRequest.newBuilder()
+                                .GET()
+                                .uri(
+                                        URI.create("https://api.imagga.com/v2/tags?image_url=https://docs.imagga.com/static/images/docs/sample/japan-605234_1280.jpg")
+                                )
+                                .header("Authorization", getBasicAuthenticationHeader("acc_3bea0f412e996f4", "974b2999a3bf8c2ea1ee33c18b2b4025"))
+                                .build(),
+                        HttpResponse.BodyHandlers.ofString()
+                ).thenAccept(response -> {
+                    System.out.println(response.body());
+                })
+                .join();
+    }
+
+    private static final String getBasicAuthenticationHeader(String username, String password) {
+        String valueToEncode = username + ":" + password;
+        return "Basic " + Base64.getEncoder().encodeToString(valueToEncode.getBytes());
     }
 }
